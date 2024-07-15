@@ -89,6 +89,11 @@ variable "unhealthy_threshold" {
   default     = 3
 }
 
+variable "target_ips" {
+  description = "The list of target IPs"
+  type        = list(string)
+}
+
 variable "tags" {
   description = "Tags to apply to resources"
   type        = map(string)
