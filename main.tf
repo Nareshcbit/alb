@@ -32,10 +32,12 @@ resource "aws_lb_target_group" "this" {
 }
 
 resource "aws_lb_target_group_attachment" "this" {
-  for_each = { for index, value in var.target_ips : index => value }
-  target_group_arn = aws_lb_target_group[this.key].arn
-  target_id        = each.value[count.index]
-  port             = aws_lb_target_group[this.key].port
+  for_each = { for tg_name, ips in var.target_ips : tg_name => ips }
+  count    = length(each.value)
+
+  target_group_arn = aws_lb_target_group[each.key].arn
+  target_id        = element(each.value, count.index)
+  port             = aws_lb_target_group[each.key].port
 }
 
 resource "aws_lb_listener" "this" {
@@ -67,8 +69,8 @@ resource "aws_lb_listener_rule" "path_based_routing" {
     type = "forward"
     forward {
       target_group {
-        target_group_arn = aws_lb_target_group[each.value.target_group].arn
-        weight           = each.value.weight
+        arn    = aws_lb_target_group[each.value.target_group].arn
+        weight = each.value.weight
       }
     }
   }
