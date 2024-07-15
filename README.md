@@ -1,6 +1,6 @@
 # ALB Module
 
-This module deploys an Application Load Balancer (ALB) along with multiple target groups, listeners, and security groups. It also supports path-based load balancing and weight-based routing.
+This module deploys an Application Load Balancer (ALB) along with multiple target groups, listeners, and security groups. It also supports path-based load balancing.
 
 ## Usage
 
@@ -64,14 +64,24 @@ module "alb" {
       priority       = 1
       path_patterns  = ["/app1/*"]
       target_group   = "target-group-1"
-      weight         = 80
     },
     {
       listener_index = 0
       priority       = 2
       path_patterns  = ["/app2/*"]
       target_group   = "target-group-2"
-      weight         = 20
+    },
+    {
+      listener_index = 1
+      priority       = 1
+      path_patterns  = ["/app3/*"]
+      target_group   = "target-group-1"
+    },
+    {
+      listener_index = 1
+      priority       = 2
+      path_patterns  = ["/app4/*"]
+      target_group   = "target-group-2"
     }
   ]
 
