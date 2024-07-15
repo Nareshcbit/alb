@@ -1,10 +1,3 @@
-# ALB Module
-
-This module deploys an Application Load Balancer (ALB) along with a target group, listeners, and security groups.
-
-## Usage
-
-```hcl
 module "alb" {
   source = "./alb"
 
@@ -19,6 +12,7 @@ module "alb" {
   target_group_port      = 80
   target_group_protocol  = "HTTP"
   vpc_id                 = "vpc-12345678"
+  target_ips             = ["192.168.1.1", "192.168.1.2"]
 
   health_check_interval  = 30
   health_check_path      = "/"
