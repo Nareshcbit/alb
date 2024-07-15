@@ -32,8 +32,8 @@ resource "aws_lb_target_group" "this" {
 }
 
 resource "aws_lb_target_group_attachment" "this" {
-  for_each = { for tg_name, ips in var.target_ips : "${tg_name}-${count.index}" => { tg_name = tg_name, ip = ips } }
-  
+  for_each = { for tg_name, ips in var.target_ips : "${tg_name}-${ip}" => { tg_name = tg_name, ip = ip } for ip in ips }
+
   target_group_arn = aws_lb_target_group[each.value.tg_name].arn
   target_id        = each.value.ip
   port             = aws_lb_target_group[each.value.tg_name].port
