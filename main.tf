@@ -11,38 +11,73 @@ resource "aws_lb" "this" {
 }
 
 resource "aws_lb_target_group" "this" {
-  name        = var.target_group_name
-  port        = var.target_group_port
-  protocol    = var.target_group_protocol
+  for_each = { for tg in var.target_groups : tg.name => tg }
+
+  name        = each.value.name
+  port        = each.value.port
+  protocol    = each.value.protocol
   vpc_id      = var.vpc_id
   target_type = "ip"
 
   health_check {
-    interval            = var.health_check_interval
-    path                = var.health_check_path
-    protocol            = var.health_check_protocol
-    timeout             = var.health_check_timeout
-    healthy_threshold   = var.healthy_threshold
-    unhealthy_threshold = var.unhealthy_threshold
+    interval            = each.value.health_check_interval
+    path                = each.value.health_check_path
+    protocol            = each.value.health_check_protocol
+    timeout             = each.value.health_check_timeout
+    healthy_threshold   = each.value.healthy_threshold
+    unhealthy_threshold = each.value.unhealthy_threshold
   }
 
   tags = var.tags
 }
 
 resource "aws_lb_target_group_attachment" "this" {
-  for_each           = var.target_ips
-  target_group_arn   = aws_lb_target_group.this.arn
-  target_id          = each.value
-  port               = var.target_group_port
+  for_each = { for index, value in var.target_ips : index => value }
+  target_group_arn = aws_lb_target_group[this.key].arn
+  target_id        = each.value[count.index]
+  port             = aws_lb_target_group[this.key].port
 }
 
-resource "aws_lb_listener" "http" {
+resource "aws_lb_listener" "this" {
+  for_each = { for listener in var.listeners : listener.port => listener }
+
   load_balancer_arn = aws_lb.this.arn
-  port              = 80
-  protocol          = "HTTP"
-  
+  port              = each.value.port
+  protocol          = each.value.protocol
+
   default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.this.arn
+    type             = "fixed-response"
+    fixed_response {
+      content_type = "text/plain"
+      message_body = "Not Found"
+      status_code  = "404"
+    }
   }
+
+  tags = var.tags
+}
+
+resource "aws_lb_listener_rule" "path_based_routing" {
+  for_each = { for rule in var.path_based_routing : rule.priority => rule }
+
+  listener_arn = aws_lb_listener.this[var.listeners[each.value.listener_index].port].arn
+  priority     = each.value.priority
+
+  action {
+    type = "forward"
+    forward {
+      target_group {
+        target_group_arn = aws_lb_target_group[each.value.target_group].arn
+        weight           = each.value.weight
+      }
+    }
+  }
+
+  condition {
+    path_pattern {
+      values = each.value.path_patterns
+    }
+  }
+
+  tags = var.tags
 }
