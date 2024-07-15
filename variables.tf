@@ -53,12 +53,6 @@ variable "vpc_id" {
   type        = string
 }
 
-variable "target_type" {
-  description = "The type of targets for the target group (instance, ip, lambda, alb)"
-  type        = string
-  default     = "instance"
-}
-
 variable "health_check_interval" {
   description = "The interval for health checks"
   type        = number
@@ -93,17 +87,6 @@ variable "unhealthy_threshold" {
   description = "The number of unhealthy checks before considering the target unhealthy"
   type        = number
   default     = 3
-}
-
-variable "ssl_policy" {
-  description = "The SSL policy for HTTPS listeners"
-  type        = string
-  default     = "ELBSecurityPolicy-2016-08"
-}
-
-variable "certificate_arn" {
-  description = "The ARN of the certificate for HTTPS listeners"
-  type        = string
 }
 
 variable "tags" {
