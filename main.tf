@@ -31,8 +31,19 @@ resource "aws_lb_target_group" "this" {
   tags = var.tags
 }
 
+locals {
+  target_group_attachments = flatten([
+    for tg_name, ips in var.target_ips : [
+      for ip in ips : {
+        tg_name = tg_name
+        ip      = ip
+      }
+    ]
+  ])
+}
+
 resource "aws_lb_target_group_attachment" "this" {
-  for_each = { for tg_name, ips in var.target_ips : "${tg_name}-${ip}" => { tg_name = tg_name, ip = ip } for ip in ips }
+  for_each = { for idx, attachment in local.target_group_attachments : "${attachment.tg_name}-${idx}" => attachment }
 
   target_group_arn = aws_lb_target_group[each.value.tg_name].arn
   target_id        = each.value.ip
