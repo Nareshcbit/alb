@@ -32,11 +32,11 @@ resource "aws_lb_target_group" "this" {
 }
 
 resource "aws_lb_target_group_attachment" "this" {
-  for_each = { for tg_name, ips in var.target_ips : tg_name => ips }
-
-  target_group_arn = aws_lb_target_group[each.key].arn
-  target_id        = each.value[count.index]
-  port             = aws_lb_target_group[each.key].port
+  for_each = { for tg_name, ips in var.target_ips : "${tg_name}-${count.index}" => { tg_name = tg_name, ip = ips } }
+  
+  target_group_arn = aws_lb_target_group[each.value.tg_name].arn
+  target_id        = each.value.ip
+  port             = aws_lb_target_group[each.value.tg_name].port
 }
 
 resource "aws_lb_listener" "this" {
@@ -59,7 +59,7 @@ resource "aws_lb_listener" "this" {
 }
 
 resource "aws_lb_listener_rule" "path_based_routing" {
-  for_each = { for rule in var.path_based_routing : rule.priority => rule }
+  for_each = { for rule in var.path_based_routing : "${rule.listener_index}-${rule.priority}" => rule }
 
   listener_arn = aws_lb_listener.this[var.listeners[each.value.listener_index].port].arn
   priority     = each.value.priority
