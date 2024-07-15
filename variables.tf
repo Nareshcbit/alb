@@ -71,7 +71,6 @@ variable "path_based_routing" {
     priority       = number
     path_patterns  = list(string)
     target_group   = string
-    weight         = number
   }))
 }
 
