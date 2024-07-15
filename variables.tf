@@ -31,67 +31,48 @@ variable "enable_deletion_protection" {
   default     = false
 }
 
-variable "target_group_name" {
-  description = "The name of the target group"
-  type        = string
-}
-
-variable "target_group_port" {
-  description = "The port for the target group"
-  type        = number
-  default     = 80
-}
-
-variable "target_group_protocol" {
-  description = "The protocol for the target group"
-  type        = string
-  default     = "HTTP"
-}
-
 variable "vpc_id" {
   description = "The VPC ID"
   type        = string
 }
 
-variable "health_check_interval" {
-  description = "The interval for health checks"
-  type        = number
-  default     = 30
-}
-
-variable "health_check_path" {
-  description = "The path for health checks"
-  type        = string
-  default     = "/"
-}
-
-variable "health_check_protocol" {
-  description = "The protocol for health checks"
-  type        = string
-  default     = "HTTP"
-}
-
-variable "health_check_timeout" {
-  description = "The timeout for health checks"
-  type        = number
-  default     = 5
-}
-
-variable "healthy_threshold" {
-  description = "The number of healthy checks before considering the target healthy"
-  type        = number
-  default     = 3
-}
-
-variable "unhealthy_threshold" {
-  description = "The number of unhealthy checks before considering the target unhealthy"
-  type        = number
-  default     = 3
+variable "target_groups" {
+  description = "List of target groups"
+  type = list(object({
+    name                 = string
+    port                 = number
+    protocol             = string
+    health_check_interval = number
+    health_check_path     = string
+    health_check_protocol = string
+    health_check_timeout  = number
+    healthy_threshold     = number
+    unhealthy_threshold   = number
+  }))
 }
 
 variable "target_ips" {
-  description = "The list of target IPs"
-  type        = list(string)
+  description = "Map of target group names to lists of target IPs"
+  type = map(list(string))
+}
+
+variable "listeners" {
+  description = "List of listeners"
+  type = list(object({
+    port     = number
+    protocol = string
+  }))
+}
+
+variable "path_based_routing" {
+  description = "List of path-based routing rules"
+  type = list(object({
+    listener_index = number
+    priority       = number
+    path_patterns  = list(string)
+    target_group   = string
+    weight         = number
+  }))
 }
 
 variable "tags" {
